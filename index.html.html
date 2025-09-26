@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>城市生活 — 最新消息</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#ffffff;--accent:#1f6feb}
+    html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans CJK TC","PingFang TC","Microsoft JhengHei",Arial;color:#111;background:var(--bg)}
+    header{background:linear-gradient(90deg,#fff 0%,#f3f6ff 100%);border-bottom:1px solid #e6e9f2;padding:18px 24px;display:flex;align-items:center;gap:16px}
+    header h1{font-size:18px;margin:0}
+    nav{margin-left:auto}
+    nav a{color:#556;text-decoration:none;margin-left:14px;font-size:14px}
+    .container{max-width:980px;margin:28px auto;padding:0 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px rgba(20,30,80,0.04);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;gap:8px}
+    .card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(20,30,80,0.1)}
+    .card .img{width:100%;height:120px;background:linear-gradient(135deg,#e9eefc,#fff);border-radius:8px}
+    .card h3{margin:0;font-size:18px}
+    .card p{margin:0;color:#555;flex:1}
+    footer{color:#777;font-size:13px;text-align:center;padding:28px 10px}
+    .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.9);z-index:9999;flex-direction:column;gap:18px}
+    .spinner{width:78px;height:78px;border-radius:50%;border:8px solid rgba(0,0,0,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite;box-shadow:0 8px 30px rgba(20,30,80,0.06)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .overlay p{margin:0;font-size:15px;color:#333}
+    .progress{width:240px;height:10px;background:#e9eefc;border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#7fb1ff);border-radius:999px;transition:width 1s linear}
+    .result{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.55));z-index:10000}
+    .result .box{background:#fff;padding:32px;border-radius:12px;max-width:560px;text-align:center}
+    .result h2{margin:0 0 8px;font-size:26px}
+    .result p{margin:0 0 18px;color:#444}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none}
+    .fake-link{color:var(--accent);cursor:pointer}
+    .top-card{grid-column:1/-1;}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="width:36px;height:36px;background:linear-gradient(135deg,#1f6feb,#7fb1ff);border-radius:8px"></div>
+    <h1>城市生活</h1>
+    <nav><a class="fake-link">最新</a><a class="fake-link">專題</a><a class="fake-link">關於我們</a></nav>
+  </header>
+
+  <main class="container">
+    <div class="card top-card">
+      <div class="img"></div>
+      <h3>熱門新聞</h3>
+      <p>本日最受關注的新聞事件，掌握最新資訊，不容錯過！</p>
+    </div>
+
+    <div class="card">
+      <div class="img"></div>
+      <h3>交通消息</h3>
+      <p>提供最新的通勤小提醒與交通路線更新，幫助你順利出行。</p>
+    </div>
+    <div class="card">
+      <div class="img"></div>
+      <h3>財經資訊</h3>
+      <p>最新股市行情、匯率波動、財經政策更新，掌握投資脈動。</p>
+    </div>
+    <div class="card">
+      <div class="img"></div>
+      <h3>新聞焦點</h3>
+      <p>即時新聞、生活大小事、天氣提醒，了解周遭發生的大小事件。</p>
+    </div>
+    <div class="card">
+      <div class="img"></div>
+      <h3>娛樂生活</h3>
+      <p>休閒娛樂、熱門活動、文化藝術消息，讓生活更豐富多彩。</p>
+    </div>
+  </main>
+
+  <footer>© 2025 城市生活。所有內容僅供參考。</footer>
+
+  <div class="overlay" id="overlay" aria-hidden="false">
+    <div class="spinner" role="img" aria-label="載入中"></div>
+    <p id="loadingText">載入中，請稍候…</p>
+    <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+    <small style="color:#666">此頁面正在處理資料，請勿關閉視窗</small>
+  </div>
+
+  <div class="result" id="result" role="dialog" aria-modal="true">
+    <div class="box">
+      <h2 id="resultTitle">你贏了！</h2>
+      <p id="resultText">算你狠</p>
+      <a class="btn" id="closeBtn">哈哈</a>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var TOTAL = 10 * 60 * 1000;
+      var start = Date.now();
+      var overlay = document.getElementById('overlay');
+      var progressBar = document.getElementById('progressBar');
+      var loadingText = document.getElementById('loadingText');
+      var result = document.getElementById('result');
+      var closeBtn = document.getElementById('closeBtn');
+
+      var tick = function(){
+        var elapsed = Date.now() - start;
+        var pct = Math.min(100, (elapsed / TOTAL) * 100);
+        progressBar.style.width = pct.toFixed(2) + '%';
+
+        if(elapsed >= TOTAL){
+          overlay.style.display = 'none';
+          result.style.display = 'flex';
+        }
+      };
+
+      tick();
+      var interval = setInterval(tick, 1000);
+
+      closeBtn.addEventListener('click', function(){ result.style.display = 'none'; });
+
+      document.querySelectorAll('.fake-link, .card, header').forEach(function(el){
+        el.addEventListener('click', function(e){
+          if(Date.now() - start < TOTAL){
+            e.preventDefault();
+            var old = loadingText.textContent;
+            loadingText.textContent = '正在為您處理需求，請稍候…';
+            setTimeout(function(){ loadingText.textContent = old; }, 1200);
+          }
+        });
+      });
+
+      try{ sessionStorage.setItem('prank_start', start.toString()); }catch(e){}
+      try{
+        var saved = session
+
